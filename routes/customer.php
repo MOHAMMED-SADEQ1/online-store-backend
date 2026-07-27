@@ -128,6 +128,7 @@ $customerRoutes = function () {
 
         // Checkout / Payment (no order creation before payment)
         Route::get('payment-methods', [CheckoutController::class, 'paymentMethods'])->name('payment-methods');
+        Route::get('payment/config', [CheckoutController::class, 'paymentConfig'])->name('payment.config');
         Route::post('checkout/pay', [CheckoutController::class, 'pay'])->name('checkout.pay');
         Route::post('checkout/{checkout}/verify', [CheckoutController::class, 'verify'])->name('checkout.verify');
         Route::get('orders/{order}/returns', [ReturnController::class, 'index'])->name('orders.returns.index');

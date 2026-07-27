@@ -1260,6 +1260,200 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 
 ---
 
+## 10. Brands (BrandController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/brands` | List with product count |
+| POST | `/brands` | Create |
+| GET | `/brands/{brand}` | Show |
+| PUT | `/brands/{brand}` | Update |
+| DELETE | `/brands/{brand}` | Delete (only if no products) |
+
+**Body (store):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `name_ar` | string | yes | `max:100` |
+| `name_en` | string | yes | `max:100` |
+| `slug` | string | no | `max:100`, `unique:brands,slug` |
+| `logo` | string | no | `max:255` |
+| `description_ar` | string | no | — |
+| `description_en` | string | no | — |
+| `is_active` | boolean | no | — |
+| `meta_title` | string | no | `max:255` |
+| `meta_description` | string | no | `max:500` |
+
+**DELETE /brands/{brand}** — `409` إذا كان للعلامة التجارية منتجات
+
+---
+
+## 11. Flash Sales (FlashSaleController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/flash-sales` | List with product/variant |
+| POST | `/flash-sales` | Create |
+| GET | `/flash-sales/{flashSale}` | Show |
+| PUT | `/flash-sales/{flashSale}` | Update |
+| DELETE | `/flash-sales/{flashSale}` | Delete |
+
+**Body (store):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `title_ar` | string | yes | `max:255` |
+| `title_en` | string | yes | `max:255` |
+| `product_id` | integer | yes | `exists:products,id` |
+| `variant_id` | integer | no | `exists:product_variants,id` |
+| `flash_price` | numeric | yes | `min:0` |
+| `max_quantity` | integer | yes | `min:1` |
+| `sold_quantity` | integer | no | `min:0` |
+| `start_date` | date | yes | — |
+| `end_date` | date | yes | `after:start_date` |
+| `is_active` | boolean | no | — |
+
+---
+
+## 12. Shipping Cities (ShippingCityController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/shipping-cities` | List with zone info |
+| POST | `/shipping-cities` | Create |
+| GET | `/shipping-cities/{shippingCity}` | Show |
+| PUT | `/shipping-cities/{shippingCity}` | Update |
+| DELETE | `/shipping-cities/{shippingCity}` | Delete |
+
+**Body (store):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `shipping_zone_id` | integer | yes | `exists:shipping_zones,id` |
+| `name_ar` | string | yes | `max:100` |
+| `name_en` | string | yes | `max:100` |
+| `cost` | numeric | yes | `min:0` |
+| `estimated_days_min` | integer | no | `min:1` |
+| `estimated_days_max` | integer | no | `min:1`, `gte:estimated_days_min` |
+| `free_shipping_threshold` | numeric | no | `min:0` |
+| `is_active` | boolean | no | — |
+
+---
+
+## 13. Newsletter Subscribers (NewsletterSubscriberController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/newsletter-subscribers` | List |
+| POST | `/newsletter-subscribers` | Create |
+| GET | `/newsletter-subscribers/{newsletterSubscriber}` | Show |
+| PUT | `/newsletter-subscribers/{newsletterSubscriber}` | Update |
+| DELETE | `/newsletter-subscribers/{newsletterSubscriber}` | Delete |
+
+**Body (store):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `email` | string | yes | `email`, `max:100`, `unique:newsletter_subscribers,email` |
+| `is_active` | boolean | no | — |
+
+---
+
+## 14. Return Requests (ReturnRequestController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/return-requests` | List with user, order, items |
+| GET | `/return-requests/{returnRequest}` | Show full |
+| PATCH | `/return-requests/{returnRequest}/status` | Update status |
+| DELETE | `/return-requests/{returnRequest}` | Delete |
+
+#### PATCH /return-requests/{returnRequest}/status
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `status` | string | yes | `in:pending,approved,rejected,items_received,refunded,completed` |
+| `refund_amount` | numeric | no | `min:0` |
+| `notes` | string | no | — |
+
+---
+
+## 15. Loyalty Program
+
+### Loyalty Tiers (LoyaltyTierController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/loyalty-tiers` | List |
+| POST | `/loyalty-tiers` | Create |
+| GET | `/loyalty-tiers/{loyaltyTier}` | Show |
+| PUT | `/loyalty-tiers/{loyaltyTier}` | Update |
+| DELETE | `/loyalty-tiers/{loyaltyTier}` | Delete |
+
+**Body (store):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `name_ar` | string | yes | `max:100` |
+| `name_en` | string | yes | `max:100` |
+| `min_points` | integer | yes | `min:0` |
+| `max_points` | integer | no | `gt:min_points` |
+| `points_multiplier` | numeric | no | `min:1` (default: 1.0) |
+| `discount_percent` | numeric | no | `min:0`, `max:100` |
+| `free_shipping` | boolean | no | — |
+| `priority_support` | boolean | no | — |
+| `is_active` | boolean | no | — |
+| `badge` | string | no | `max:50` (مثل: 🥉, 🥈, 🥇) |
+
+### Loyalty Points & Transactions (LoyaltyPointController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/loyalty-points` | List all users' points |
+| GET | `/loyalty-points/{loyaltyPoint}` | Show user points + transactions |
+| POST | `/loyalty-points/{loyaltyPoint}/adjust` | Adjust points (add/remove) |
+| GET | `/loyalty-transactions` | All transactions |
+| GET | `/loyalty-transactions/user/{user}` | User-specific transactions |
+
+#### POST /loyalty-points/{loyaltyPoint}/adjust — تعديل الرصيد
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `points` | integer | yes | موجب للإضافة، سالب للخصم |
+| `description_ar` | string | yes | `max:255` |
+| `description_en` | string | yes | `max:255` |
+
+### Referral Codes (ReferralCodeController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/referral-codes` | List with redemption counts |
+| GET | `/referral-codes/{referralCode}` | Show with redemptions |
+| PUT | `/referral-codes/{referralCode}` | Toggle active |
+| GET | `/referral-redemptions` | All redemptions |
+| GET | `/referral-redemptions/code/{referralCode}` | By referral code |
+
+---
+
+## 16. Gift Cards (GiftCardController) — NEW
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/gift-cards` | List with purchaser info |
+| GET | `/gift-cards/{giftCard}` | Show with usage history |
+| PUT | `/gift-cards/{giftCard}` | Update (balance, active, expires) |
+| DELETE | `/gift-cards/{giftCard}` | Delete |
+
+**Body (update):**
+
+| Field | Type | Required | Rules |
+|-------|------|----------|-------|
+| `current_balance` | numeric | no | `min:0` |
+| `is_active` | boolean | no | — |
+| `expires_at` | date | no | `after:now` |
+
+---
+
 ## Common Response Codes
 
 | Code | Meaning |
@@ -1269,7 +1463,7 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 | 401 | Unauthenticated |
 | 403 | Forbidden (not admin) |
 | 404 | Not found |
-| 409 | Conflict (e.g. last admin, category with children) |
+| 409 | Conflict (e.g. last admin, category with children, brand with products) |
 | 422 | Validation failed |
 
 ## Error Format
@@ -1287,7 +1481,9 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 
 ---
 
-## Complete Database Coverage (46 Tables)
+## Complete Database Coverage (60+ Tables)
+
+> ✅ = Admin Controller موجود | 🆕 = تمت الإضافة حديثاً | — = داخلي (لا يحتاج API)
 
 | # | Table | Admin API | Controller |
 |---|-------|-----------|------------|
@@ -1302,7 +1498,7 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 | 9 | `product_categories` | ✅ sync via products | — |
 | 10 | `product_tags` | ✅ sync via products | — |
 | 11 | `attributes` | ✅ CRUD | AttributeController |
-| 12 | `attribute_values` | ✅ Full CRUD (Create/Update/Delete) | AttributeController |
+| 12 | `attribute_values` | ✅ Full CRUD | AttributeController |
 | 13 | `product_attributes` | ✅ sync via products | — |
 | 14 | `product_variants` | ✅ CRUD | VariantController |
 | 15 | `variant_attribute_values` | ✅ sync via variants | — |
@@ -1328,15 +1524,29 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 | 35 | `payments` | ✅ Full CRUD | PaymentController |
 | 36 | `shipping_zones` | ✅ CRUD | ShippingZoneController |
 | 37 | `shipping` | ✅ CRUD | ShippingController |
-| 38 | `settings` | ✅ Read/Update | SettingController |
-| 39 | `cache` | — (internal) | — |
-| 40 | `cache_locks` | — (internal) | — |
-| 41 | `sessions` | — (internal) | — |
-| 42 | `jobs` | ✅ List | SystemController |
-| 43 | `job_batches` | ✅ List/Show | SystemController |
-| 44 | `failed_jobs` | ✅ List/Retry | SystemController |
-| 45 | `personal_access_tokens` | — (Sanctum) | — |
-| 46 | `password_reset_tokens` | — (internal) | — |
+| 38 | **`brands`** | ✅ **🆕 CRUD** | **BrandController** |
+| 39 | **`flash_sales`** | ✅ **🆕 CRUD** | **FlashSaleController** |
+| 40 | **`shipping_cities`** | ✅ **🆕 CRUD** | **ShippingCityController** |
+| 41 | **`newsletter_subscribers`** | ✅ **🆕 CRUD** | **NewsletterSubscriberController** |
+| 42 | **`return_requests`** | ✅ **🆕 List/Show/Status/Delete** | **ReturnRequestController** |
+| 43 | **`return_items`** | ✅ **🆕 loaded via returns** | ReturnRequestController |
+| 44 | **`loyalty_tiers`** | ✅ **🆕 CRUD** | **LoyaltyTierController** |
+| 45 | **`loyalty_points`** | ✅ **🆕 List/Show/Adjust** | **LoyaltyPointController** |
+| 46 | **`loyalty_transactions`** | ✅ **🆕 List** | LoyaltyPointController |
+| 47 | **`referral_codes`** | ✅ **🆕 List/Show/Update** | **ReferralCodeController** |
+| 48 | **`referral_redemptions`** | ✅ **🆕 List** | ReferralCodeController |
+| 49 | **`gift_cards`** | ✅ **🆕 List/Show/Update/Delete** | **GiftCardController** |
+| 50 | **`gift_card_usages`** | ✅ **🆕 loaded via gift cards** | GiftCardController |
+| 51 | `settings` | ✅ Read/Update | SettingController |
+| 52 | `cache` | — (internal) | — |
+| 53 | `cache_locks` | — (internal) | — |
+| 54 | `sessions` | — (internal) | — |
+| 55 | `jobs` | ✅ List | SystemController |
+| 56 | `job_batches` | ✅ List/Show | SystemController |
+| 57 | `failed_jobs` | ✅ List/Retry | SystemController |
+| 58 | `personal_access_tokens` | — (Sanctum) | — |
+| 59 | `otp_codes` | — (internal) | — |
+| 60 | `pending_checkouts` | — (internal/payment flow) | — |
 
 ---
 
@@ -1349,6 +1559,10 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 | `CouponService` | Coupon validation (dates, limits, min order, applicables), discount calc |
 | `ProductVariantService` | Variant CRUD with EAV sync, stock management |
 | `AuditService` | Centralized audit log with user/IP/UA context |
+| `LoyaltyService` | Loyalty points, tiers, referrals, signup/review rewards |
+| `GiftCardService` | Gift card creation, validation, balance, apply to order |
+| `SearchService` | Advanced Meilisearch with facets, filters, suggestions |
+| `RecommendationService` | Frequently bought together, personalized, top selling |
 
 ### Observers (`app/Observers/`) — auto-log to `audit_log`
 - `ProductObserver`, `OrderObserver`, `CouponObserver`, `SettingObserver`
@@ -1359,6 +1573,67 @@ Captures: created/updated/deleted on Products, Orders, Coupons, Settings + user/
 | `auth:sanctum` | جميع المسارات ما عدا `/auth/login` |
 | `admin` | جميع المسارات ما عدا `/auth/login` (تحقق `role === admin`) |
 | `throttle:5,1` | `/auth/login` فقط |
+
+### New Admin Endpoints Summary
+
+```
+# Brands
+GET    /brands
+POST   /brands
+GET    /brands/{brand}
+PUT    /brands/{brand}
+DELETE /brands/{brand}
+
+# Flash Sales
+GET    /flash-sales
+POST   /flash-sales
+GET    /flash-sales/{flashSale}
+PUT    /flash-sales/{flashSale}
+DELETE /flash-sales/{flashSale}
+
+# Shipping Cities
+GET    /shipping-cities
+POST   /shipping-cities
+GET    /shipping-cities/{shippingCity}
+PUT    /shipping-cities/{shippingCity}
+DELETE /shipping-cities/{shippingCity}
+
+# Newsletter Subscribers
+GET    /newsletter-subscribers
+POST   /newsletter-subscribers
+GET    /newsletter-subscribers/{newsletterSubscriber}
+PUT    /newsletter-subscribers/{newsletterSubscriber}
+DELETE /newsletter-subscribers/{newsletterSubscriber}
+
+# Return Requests
+GET    /return-requests
+GET    /return-requests/{returnRequest}
+PATCH  /return-requests/{returnRequest}/status
+DELETE /return-requests/{returnRequest}
+
+# Loyalty Program
+GET    /loyalty-tiers
+POST   /loyalty-tiers
+GET    /loyalty-tiers/{loyaltyTier}
+PUT    /loyalty-tiers/{loyaltyTier}
+DELETE /loyalty-tiers/{loyaltyTier}
+GET    /loyalty-points
+GET    /loyalty-points/{loyaltyPoint}
+POST   /loyalty-points/{loyaltyPoint}/adjust
+GET    /loyalty-transactions
+GET    /loyalty-transactions/user/{user}
+GET    /referral-codes
+GET    /referral-codes/{referralCode}
+PUT    /referral-codes/{referralCode}
+GET    /referral-redemptions
+GET    /referral-redemptions/code/{referralCode}
+
+# Gift Cards
+GET    /gift-cards
+GET    /gift-cards/{giftCard}
+PUT    /gift-cards/{giftCard}
+DELETE /gift-cards/{giftCard}
+```
 
 ---
 

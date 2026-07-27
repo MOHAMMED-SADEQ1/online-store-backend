@@ -38,7 +38,23 @@ class CheckoutController extends Controller
                 'additional_fee' => (float) $m->additional_fee,
             ]);
 
-        return response()->json(['payment_methods' => $methods]);
+        return response()->json([
+            'payment_methods'   => $methods,
+            'moyasar_key'       => config('moyasar.publishable_key'),
+            'moyasar_test_mode' => config('moyasar.test_mode', true),
+        ]);
+    }
+
+    /**
+     * Get Moyasar payment gateway configuration for the frontend.
+     */
+    public function paymentConfig(): JsonResponse
+    {
+        return response()->json([
+            'moyasar_key'       => config('moyasar.publishable_key'),
+            'moyasar_test_mode' => config('moyasar.test_mode', true),
+            'currency'          => 'SAR',
+        ]);
     }
 
     public function pay(Request $request): JsonResponse

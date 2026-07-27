@@ -4,13 +4,19 @@ use App\Http\Controllers\Admin\AddressController;
 use App\Http\Controllers\Admin\AttributeController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\CartController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CompareController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FlashSaleController;
+use App\Http\Controllers\Admin\GiftCardController;
 use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\LoyaltyPointController;
+use App\Http\Controllers\Admin\LoyaltyTierController;
+use App\Http\Controllers\Admin\NewsletterSubscriberController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\PaymentController;
@@ -19,9 +25,12 @@ use App\Http\Controllers\Admin\PriceAlertController;
 use App\Http\Controllers\Admin\PriceHistoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\RecentlyViewedController;
+use App\Http\Controllers\Admin\ReferralCodeController;
+use App\Http\Controllers\Admin\ReturnRequestController;
 use App\Http\Controllers\Admin\ReviewController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ShippingController;
+use App\Http\Controllers\Admin\ShippingCityController;
 use App\Http\Controllers\Admin\ShippingZoneController;
 use App\Http\Controllers\Admin\StockAlertController;
 use App\Http\Controllers\Admin\SystemController;
@@ -209,6 +218,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Shipping Zones
         Route::apiResource('shipping-zones', ShippingZoneController::class)->parameters(['shipping-zones' => 'shippingZone']);
 
+        // Shipping Cities (nested under shipping-zones or standalone)
+        Route::apiResource('shipping-cities', ShippingCityController::class)->parameters(['shipping-cities' => 'shippingCity']);
+
+        // Brands
+        Route::apiResource('brands', BrandController::class);
+
+        // Flash Sales
+        Route::apiResource('flash-sales', FlashSaleController::class)->parameters(['flash-sales' => 'flashSale']);
+
+        // Newsletter Subscribers
+        Route::apiResource('newsletter-subscribers', NewsletterSubscriberController::class)->parameters(['newsletter-subscribers' => 'newsletterSubscriber']);
+
         // Settings
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
@@ -227,7 +248,46 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
         Route::get('audit-logs/{auditLog}', [AuditLogController::class, 'show'])->name('audit-logs.show');
 
+        // Return Requests (admin management)
+        Route::get('return-requests', [ReturnRequestController::class, 'index'])->name('return-requests.index');
+        Route::get('return-requests/{returnRequest}', [ReturnRequestController::class, 'show'])->name('return-requests.show');
+        Route::patch('return-requests/{returnRequest}/status', [ReturnRequestController::class, 'updateStatus'])->name('return-requests.status');
+        Route::delete('return-requests/{returnRequest}', [ReturnRequestController::class, 'destroy'])->name('return-requests.destroy');
+
+        // ============================================================
+        // Loyalty Program
+        // ============================================================
+
+        // Loyalty Tiers
+        Route::apiResource('loyalty-tiers', LoyaltyTierController::class)->parameters(['loyalty-tiers' => 'loyaltyTier']);
+
+        // Loyalty Points (with transactions)
+        Route::get('loyalty-points', [LoyaltyPointController::class, 'index'])->name('loyalty-points.index');
+        Route::get('loyalty-points/{loyaltyPoint}', [LoyaltyPointController::class, 'show'])->name('loyalty-points.show');
+        Route::post('loyalty-points/{loyaltyPoint}/adjust', [LoyaltyPointController::class, 'adjustBalance'])->name('loyalty-points.adjust');
+        Route::get('loyalty-transactions', [LoyaltyPointController::class, 'transactions'])->name('loyalty-transactions.index');
+        Route::get('loyalty-transactions/user/{user}', [LoyaltyPointController::class, 'transactions'])->name('loyalty-transactions.user');
+
+        // Referral Codes
+        Route::get('referral-codes', [ReferralCodeController::class, 'index'])->name('referral-codes.index');
+        Route::get('referral-codes/{referralCode}', [ReferralCodeController::class, 'show'])->name('referral-codes.show');
+        Route::put('referral-codes/{referralCode}', [ReferralCodeController::class, 'update'])->name('referral-codes.update');
+        Route::get('referral-redemptions', [ReferralCodeController::class, 'redemptions'])->name('referral-redemptions.index');
+        Route::get('referral-redemptions/code/{referralCode}', [ReferralCodeController::class, 'redemptions'])->name('referral-redemptions.by-code');
+
+        // ============================================================
+        // Gift Cards
+        // ============================================================
+
+        Route::get('gift-cards', [GiftCardController::class, 'index'])->name('gift-cards.index');
+        Route::get('gift-cards/{giftCard}', [GiftCardController::class, 'show'])->name('gift-cards.show');
+        Route::put('gift-cards/{giftCard}', [GiftCardController::class, 'update'])->name('gift-cards.update');
+        Route::delete('gift-cards/{giftCard}', [GiftCardController::class, 'destroy'])->name('gift-cards.destroy');
+
+        // ============================================================
         // System Monitoring
+        // ============================================================
+
         Route::get('system/failed-jobs', [SystemController::class, 'failedJobs'])->name('system.failed-jobs');
         Route::get('system/failed-jobs/{id}', [SystemController::class, 'showFailedJob'])->name('system.failed-jobs.show');
         Route::post('system/failed-jobs/{id}/retry', [SystemController::class, 'retryFailedJob'])->name('system.failed-jobs.retry');
