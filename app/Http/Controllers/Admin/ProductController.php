@@ -46,7 +46,7 @@ class ProductController extends Controller
             'low_stock_threshold' => 'integer|min:0',
             'weight'              => 'nullable|numeric|min:0',
             'dimensions'          => 'nullable|string|max:100',
-            'main_image'          => 'nullable|string|max:255',
+            'main_image'          => 'nullable',
             'image'               => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active'           => 'boolean',
             'is_featured'         => 'boolean',
@@ -66,9 +66,11 @@ class ProductController extends Controller
             'meta_description'    => 'nullable|string|max:500',
         ]);
 
-        // Handle image file upload → set main_image path
+        // Handle image file upload from either 'image' or 'main_image' field
         if ($request->hasFile('image')) {
             $data['main_image'] = $request->file('image')->store('products', 'public');
+        } elseif ($request->hasFile('main_image')) {
+            $data['main_image'] = $request->file('main_image')->store('products', 'public');
         }
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name_en']);
@@ -123,7 +125,7 @@ class ProductController extends Controller
             'low_stock_threshold' => 'integer|min:0',
             'weight'              => 'nullable|numeric|min:0',
             'dimensions'          => 'nullable|string|max:100',
-            'main_image'          => 'nullable|string|max:255',
+            'main_image'          => 'nullable',
             'image'               => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active'           => 'boolean',
             'is_featured'         => 'boolean',
@@ -143,13 +145,27 @@ class ProductController extends Controller
             'meta_description'    => 'nullable|string|max:500',
         ]);
 
-        // Handle image file upload → set main_image path ( delete old if exists )
+        // Handle image file upload from 'image' or 'main_image' field
+        $uploadedFile = null;
         if ($request->hasFile('image')) {
+            $uploadedFile = $request->file('image');
+        } elseif ($request->hasFile('main_image')) {
+            $uploadedFile = $request->file('main_image');
+        }
+
+        if ($uploadedFile) {
             // Delete old main_image file if it exists and is not an external URL
             if ($product->main_image && !str_starts_with($product->main_image, 'http')) {
                 Storage::disk('public')->delete($product->main_image);
             }
-            $data['main_image'] = $request->file('image')->store('products', 'public');
+            $data['main_image'] = $uploadedFile->store('products', 'public');
+        }
+
+        // Handle explicit main_image=null to clear the image and delete the file
+        if (array_key_exists('main_image', $data) && $data['main_image'] === null) {
+            if ($product->main_image && !str_starts_with($product->main_image, 'http')) {
+                Storage::disk('public')->delete($product->main_image);
+            }
         }
 
         DB::transaction(function () use ($data, $product) {
