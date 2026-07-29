@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -46,6 +47,7 @@ class ProductController extends Controller
             'weight'              => 'nullable|numeric|min:0',
             'dimensions'          => 'nullable|string|max:100',
             'main_image'          => 'nullable|string|max:255',
+            'image'               => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active'           => 'boolean',
             'is_featured'         => 'boolean',
             'is_returnable'       => 'boolean',
@@ -63,6 +65,11 @@ class ProductController extends Controller
             'meta_title'          => 'nullable|string|max:255',
             'meta_description'    => 'nullable|string|max:500',
         ]);
+
+        // Handle image file upload → set main_image path
+        if ($request->hasFile('image')) {
+            $data['main_image'] = $request->file('image')->store('products', 'public');
+        }
 
         $data['slug'] = $data['slug'] ?? Str::slug($data['name_en']);
 
@@ -117,6 +124,7 @@ class ProductController extends Controller
             'weight'              => 'nullable|numeric|min:0',
             'dimensions'          => 'nullable|string|max:100',
             'main_image'          => 'nullable|string|max:255',
+            'image'               => 'nullable|file|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active'           => 'boolean',
             'is_featured'         => 'boolean',
             'is_returnable'       => 'boolean',
@@ -134,6 +142,15 @@ class ProductController extends Controller
             'meta_title'          => 'nullable|string|max:255',
             'meta_description'    => 'nullable|string|max:500',
         ]);
+
+        // Handle image file upload → set main_image path ( delete old if exists )
+        if ($request->hasFile('image')) {
+            // Delete old main_image file if it exists and is not an external URL
+            if ($product->main_image && !str_starts_with($product->main_image, 'http')) {
+                Storage::disk('public')->delete($product->main_image);
+            }
+            $data['main_image'] = $request->file('image')->store('products', 'public');
+        }
 
         DB::transaction(function () use ($data, $product) {
             $product->update($data);

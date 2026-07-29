@@ -25,7 +25,11 @@ class AdminProductResource extends JsonResource
             'low_stock_threshold'  => $this->low_stock_threshold,
             'weight'               => (float) $this->weight,
             'dimensions'           => $this->dimensions,
-            'main_image'           => $this->main_image,
+            'main_image'           => $this->main_image
+                ? (str_starts_with($this->main_image, 'http')
+                    ? $this->main_image
+                    : url('storage/' . $this->main_image))
+                : null,
             'is_active'            => $this->is_active,
             'is_featured'          => $this->is_featured,
             'is_returnable'        => $this->is_returnable,

@@ -15,6 +15,7 @@ use App\Models\StockAlert;
 use App\Models\User;
 use App\Models\Wishlist;
 use App\Services\OrderService;
+use App\Services\StatisticsService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,8 +23,14 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    public function __construct(protected OrderService $orderService) {}
+    public function __construct(
+        protected OrderService $orderService,
+        protected StatisticsService $statistics,
+    ) {}
 
+    /**
+     * Main dashboard stats (existing, enhanced).
+     */
     public function stats(Request $request): JsonResponse
     {
         $now = Carbon::now();
@@ -49,7 +56,7 @@ class DashboardController extends Controller
         $pendingOrdersCount = Order::where('order_status', 'pending')->count();
         $ordersByStatus = Order::selectRaw('order_status, COUNT(*) as count')->groupBy('order_status')->pluck('count', 'order_status');
         $ordersByPaymentStatus = Order::selectRaw('payment_status, COUNT(*) as count')->groupBy('payment_status')->pluck('count', 'payment_status');
-        $recentOrders = Order::with('user')->latest()->take(10)->get();
+        $recentOrders = Order::with('user:id,username,email,first_name,last_name')->latest()->take(10)->get();
 
         // ── Products ──
         $totalProducts = Product::count();
@@ -102,7 +109,9 @@ class DashboardController extends Controller
             ->count();
         $priceAlertsActive = PriceAlert::where('is_active', true)->count();
         $stockAlertsActive = StockAlert::where('is_notified', false)->count();
-        $todayVisitors = RecentlyViewed::whereDate('viewed_at', $today)->count();
+        $todayVisitors = RecentlyViewed::whereDate('viewed_at', $today)
+            ->selectRaw('COUNT(DISTINCT COALESCE(user_id, session_id)) as count')
+            ->value('count');
         $totalWishlistItems = Wishlist::count();
 
         return response()->json([
@@ -146,5 +155,82 @@ class DashboardController extends Controller
             'today_visitors'        => $todayVisitors,
             'total_wishlist_items'  => $totalWishlistItems,
         ]);
+    }
+
+    // ========================================================================
+    // ADVANCED STATISTICS ENDPOINTS
+    // ========================================================================
+
+    /**
+     * 1. Monthly sales breakdown (last 12 months).
+     * GET /api/admin/dashboard/monthly-sales?months=12
+     */
+    public function monthlySales(Request $request): JsonResponse
+    {
+        $months = (int) $request->get('months', 12);
+        return response()->json($this->statistics->monthlySales($months));
+    }
+
+    /**
+     * 2. Top selling products.
+     * GET /api/admin/dashboard/top-products?period=all&limit=20&date_from=&date_to=
+     */
+    public function topProducts(Request $request): JsonResponse
+    {
+        return response()->json($this->statistics->topSellingProducts($request));
+    }
+
+    /**
+     * 3. Customer analytics.
+     * GET /api/admin/dashboard/customer-analytics
+     */
+    public function customerAnalytics(): JsonResponse
+    {
+        return response()->json($this->statistics->customerAnalytics());
+    }
+
+    /**
+     * 4. Conversion rate (funnel analysis).
+     * GET /api/admin/dashboard/conversion-rate
+     */
+    public function conversionRate(): JsonResponse
+    {
+        return response()->json($this->statistics->conversionRate());
+    }
+
+    /**
+     * 5. Real-time / Pulse statistics.
+     * GET /api/admin/dashboard/realtime
+     */
+    public function realtime(): JsonResponse
+    {
+        return response()->json($this->statistics->realtimeStats());
+    }
+
+    /**
+     * 6. Sales by custom date range.
+     * GET /api/admin/dashboard/sales-by-date?date_from=2026-01-01&date_to=2026-07-01&group_by=day
+     */
+    public function salesByDate(Request $request): JsonResponse
+    {
+        return response()->json($this->statistics->salesByDateRange($request));
+    }
+
+    /**
+     * 7. Order fulfillment analytics.
+     * GET /api/admin/dashboard/fulfillment
+     */
+    public function fulfillment(): JsonResponse
+    {
+        return response()->json($this->statistics->orderFulfillment());
+    }
+
+    /**
+     * 8. Product performance analytics.
+     * GET /api/admin/dashboard/product-performance
+     */
+    public function productPerformance(): JsonResponse
+    {
+        return response()->json($this->statistics->productPerformance());
     }
 }

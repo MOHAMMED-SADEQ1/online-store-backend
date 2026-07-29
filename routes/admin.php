@@ -60,6 +60,16 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Dashboard
         Route::get('dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
 
+        // Advanced Statistics
+        Route::get('dashboard/monthly-sales', [DashboardController::class, 'monthlySales'])->name('dashboard.monthly-sales');
+        Route::get('dashboard/top-products', [DashboardController::class, 'topProducts'])->name('dashboard.top-products');
+        Route::get('dashboard/customer-analytics', [DashboardController::class, 'customerAnalytics'])->name('dashboard.customer-analytics');
+        Route::get('dashboard/conversion-rate', [DashboardController::class, 'conversionRate'])->name('dashboard.conversion-rate');
+        Route::get('dashboard/realtime', [DashboardController::class, 'realtime'])->name('dashboard.realtime');
+        Route::get('dashboard/sales-by-date', [DashboardController::class, 'salesByDate'])->name('dashboard.sales-by-date');
+        Route::get('dashboard/fulfillment', [DashboardController::class, 'fulfillment'])->name('dashboard.fulfillment');
+        Route::get('dashboard/product-performance', [DashboardController::class, 'productPerformance'])->name('dashboard.product-performance');
+
         // ============================================================
         // Products & EAV System
         // ============================================================

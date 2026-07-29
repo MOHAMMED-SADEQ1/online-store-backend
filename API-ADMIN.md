@@ -140,6 +140,283 @@ Accept: application/json
 
 ---
 
+### 📊 Advanced Statistics Endpoints
+
+#### GET /dashboard/monthly-sales — المبيعات الشهرية
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `months` | integer | `12` | عدد الأشهر الماضية |
+
+**Response (200):**
+```json
+{
+  "months": [
+    {
+      "month": "2026-01",
+      "label_ar": "يناير 2026",
+      "label_en": "January 2026",
+      "total_orders": 45,
+      "revenue": 15000.00,
+      "tax": 2250.00,
+      "shipping": 500.00,
+      "discounts": 1200.00,
+      "avg_order_value": 333.33
+    }
+  ],
+  "total_revenue": 180000.00,
+  "total_orders": 540,
+  "average_monthly": 15000.00,
+  "revenue_growth": 12.5,
+  "best_month": { "month": "2026-06", "revenue": 22000.00, "total_orders": 68 }
+}
+```
+
+#### GET /dashboard/top-products — أفضل المنتجات مبيعاً
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `all` | `all`, `month`, `week`, `custom` |
+| `limit` | integer | `20` | عدد المنتجات |
+| `date_from` | date | — | تاريخ البداية (لـ custom) |
+| `date_to` | date | — | تاريخ النهاية |
+
+**Response (200):**
+```json
+[
+  {
+    "product_id": 1,
+    "name": "دهن عود سوبر",
+    "name_ar": "دهن عود سوبر",
+    "name_en": "Super Oud Oil",
+    "slug": "oud-super",
+    "sku": "OUD-SUP-001",
+    "image": "http://.../storage/products/oud.jpg",
+    "category": "دهن العود",
+    "regular_price": 249.00,
+    "total_sold": 150,
+    "revenue": 37350.00,
+    "order_count": 120,
+    "avg_price": 249.00
+  }
+]
+```
+
+#### GET /dashboard/customer-analytics — تحليل العملاء
+
+**Response (200):**
+```json
+{
+  "total_customers": 500,
+  "active_buyers": 320,
+  "repeat_buyers": 180,
+  "repeat_purchase_rate": 56.25,
+  "new_this_month": 25,
+  "new_last_month": 20,
+  "customer_growth": 25.00,
+  "signup_trend": [
+    { "month": "2026-01", "label_ar": "يناير", "label_en": "January", "count": 30 }
+  ],
+  "top_customers": [
+    {
+      "id": 5,
+      "name": "أحمد علي",
+      "email": "ahmed@example.com",
+      "phone": "0555555555",
+      "total_orders": 25,
+      "total_spent": 15000.00,
+      "avg_order_value": 600.00,
+      "last_order_date": "2026-07-15T10:00:00.000000Z"
+    }
+  ],
+  "by_city": [
+    { "name": "الرياض", "count": 200 },
+    { "name": "جدة", "count": 120 }
+  ]
+}
+```
+
+**Fields:**
+
+| Field | Description |
+|-------|-------------|
+| `repeat_purchase_rate` | نسبة العملاء الذين طلبوا أكثر من مرة (%) |
+| `signup_trend` | عدد المشتركين الجدد شهرياً (آخر 12 شهر) |
+| `top_customers` | أفضل 20 عميل حسب إجمالي الإنفاق (LTV) |
+| `by_city` | توزيع العملاء حسب المدينة |
+
+#### GET /dashboard/conversion-rate — معدل التحويل (Funnel)
+
+**Response (200):**
+```json
+{
+  "funnel": [
+    { "stage": "visitors", "label_ar": "الزوار", "label_en": "Visitors", "count": 10000 },
+    { "stage": "cart", "label_ar": "سلة تسوق", "label_en": "Cart", "count": 2500 },
+    { "stage": "checkout", "label_ar": "بدأ الدفع", "label_en": "Checkout", "count": 1200 },
+    { "stage": "paid_orders", "label_ar": "طلبات مدفوعة", "label_en": "Paid Orders", "count": 850 }
+  ],
+  "rates": {
+    "visitor_to_cart": 25.00,
+    "cart_to_checkout": 48.00,
+    "checkout_to_paid": 70.83,
+    "overall_conversion": 8.50,
+    "cart_abandonment": 52.00
+  },
+  "today": { "visitors": 150, "checkouts": 18, "orders": 12 },
+  "totals": {
+    "total_carts": 3000,
+    "carts_with_items": 2500,
+    "carts_with_coupon": 450,
+    "abandoned_carts": 1300,
+    "total_checkouts": 1200,
+    "total_orders": 1100,
+    "paid_orders": 850
+  }
+}
+```
+
+#### GET /dashboard/realtime — إحصائيات فورية (Pulse)
+
+**Response (200):**
+```json
+{
+  "pulse": {
+    "today_revenue": 2500.00,
+    "today_orders": 15,
+    "today_customers": 5,
+    "today_visitors": 120,
+    "today_checkouts": 10,
+    "hour_orders": 3,
+    "hour_revenue": 450.00
+  },
+  "needs_attention": {
+    "pending_orders": 8,
+    "processing_orders": 5,
+    "pending_reviews": 12,
+    "pending_returns": 3,
+    "low_stock": 7,
+    "out_of_stock": 4
+  },
+  "last_24h": {
+    "orders": 32,
+    "revenue": 5400.00,
+    "users": 18
+  }
+}
+```
+
+**Fields:**
+
+| Group | Description |
+|-------|-------------|
+| `pulse` | ملخص اليوم — الإيرادات، الطلبات، الزوار، الشيكات |
+| `needs_attention` | الأمور التي تحتاج متابعة (طلبات معلقة، مراجعات، مخزون) |
+| `last_24h` | إحصائيات آخر 24 ساعة |
+
+#### GET /dashboard/sales-by-date — مبيعات حسب تاريخ مخصص
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `date_from` | date | أول الشهر | تاريخ البداية |
+| `date_to` | date | اليوم | تاريخ النهاية |
+| `group_by` | string | `day` | `day`, `week`, `month` |
+
+**Response (200):**
+```json
+{
+  "date_from": "2026-06-01",
+  "date_to": "2026-07-20",
+  "group_by": "month",
+  "total_revenue": 85000.00,
+  "total_orders": 210,
+  "sales": [
+    {
+      "period": "2026-06",
+      "total_orders": 110,
+      "revenue": 42000.00,
+      "tax": 6300.00,
+      "shipping": 1200.00,
+      "discounts": 3500.00,
+      "avg_order_value": 381.82
+    }
+  ]
+}
+```
+
+#### GET /dashboard/fulfillment — تحليل تنفيذ الطلبات
+
+**Response (200):**
+```json
+{
+  "avg_hours": {
+    "to_confirm": 2.5,
+    "to_ship": 18.3,
+    "to_deliver": 48.0,
+    "total": 68.8
+  },
+  "orders_by_status": {
+    "pending": 10,
+    "confirmed": 5,
+    "processing": 8,
+    "shipped": 12,
+    "delivered": 75,
+    "cancelled": 10
+  },
+  "cancellation_reasons": [
+    { "reason": "تأخير في التوصيل", "count": 4 },
+    { "reason": "طلب إلغاء من العميل", "count": 3 }
+  ],
+  "total_fulfilled": 110
+}
+```
+
+**Fields:**
+
+| Field | Description |
+|-------|-------------|
+| `avg_hours.to_confirm` | متوسط الوقت من إنشاء الطلب حتى التأكيد (ساعات) |
+| `avg_hours.to_ship` | متوسط الوقت من التأكيد حتى الشحن |
+| `avg_hours.to_deliver` | متوسط الوقت من الشحن حتى التوصيل |
+| `avg_hours.total` | إجمالي متوسط وقت التوصيل |
+| `cancellation_reasons` | أكثر أسباب الإلغاء شيوعاً |
+
+#### GET /dashboard/product-performance — أداء المنتجات
+
+**Response (200):**
+```json
+{
+  "totals": {
+    "total_products": 45,
+    "active_products": 40,
+    "inactive_products": 5,
+    "with_variants": 30,
+    "with_no_sales": 8
+  },
+  "stock_distribution": {
+    "in_stock": 30,
+    "low_stock": 7,
+    "out_of_stock": 3
+  },
+  "top_categories": [
+    { "id": 1, "name": "دهن العود", "products_count": 15 }
+  ],
+  "reviews": {
+    "average_rating": 4.2,
+    "total_reviews": 350,
+    "approved_reviews": 300
+  }
+}
+```
+
+---
+
 ## 3. Products (EAV System)
 
 ### Products — `products` table (ProductController)
@@ -187,7 +464,8 @@ Accept: application/json
 | `low_stock_threshold` | integer | no | `min:0` |
 | `weight` | numeric | no | `min:0` |
 | `dimensions` | string | no | `max:100` |
-| `main_image` | string | no | `max:255` |
+| `main_image` | string | no | `max:255` — رابط URL مباشر للصورة |
+| `image` | file | no | **NEW** 🆕 ملف صورة (`jpeg,png,jpg,gif,webp`، حد أقصى 5MB) — إذا تم إرساله، يتم تخزينه تلقائياً وتعيين `main_image` |
 | `is_active` | boolean | no | — |
 | `is_featured` | boolean | no | — |
 | `is_returnable` | boolean | no | هل المنتج قابل للإرجاع (استرداد مبلغ) |
@@ -202,6 +480,16 @@ Accept: application/json
 | `tags[]` | array | no | `exists:tags,id` |
 | `attributes[]` | array | no | `exists:attributes,id` |
 
+**📌 ملاحظات هامة عن الصورة الرئيسية (`main_image` / `image`):**
+- يمكنك إرسال **رابط URL** في حقل `main_image` (كما كان سابقاً)
+- **أو** يمكنك رفع **ملف صورة** في حقل `image` (جديد) — سيتم تخزينه في `storage/app/public/products/` وسيتولى النظام تعيين `main_image` تلقائياً
+- إذا أرسلت `image` و `main_image` معاً، **الملف المرتفع (image) له الأولوية**
+- يتم **حذف الصورة القديمة** من السيرفر تلقائياً عند رفع صورة جديدة في عملية التحديث
+- الصورة تُخزن بتنسيق متوافق مع Laravel Storage ويمكن الوصول إليها عبر `/storage/products/...`
+- لعرض صورة المنتج: استخدم `AdminProductResource.main_image` الذي يعيد رابطاً كاملاً
+
+**⚠️ يجب استخدام `Content-Type: multipart/form-data` عند إرسال ملف صورة.**
+
 **Response (201):** `{ "message": "Product created successfully.", "product": AdminProductResource }`
 
 #### GET /products/{product} — عرض منتج
@@ -210,9 +498,21 @@ Accept: application/json
 
 محمل بالعلاقات: `categories`, `tags`, `attributes` (مع `pivot.is_variation`, `pivot.display_order`), `variants` (مع `attributeValues.attribute` و `images`), `images` (product-level فقط)
 
+حقل `main_image` الآن يعيد رابطاً كاملاً:
+```json
+"main_image": "https://yourdomain.com/storage/products/abc123.jpg"
+```
+إذا كانت الصورة رابطاً خارجياً، يعيد الرابط كما هو. إذا كانت الصورة مخزنة محلياً، يعيد الرابط الكامل مع `url('storage/' . $path)`.
+إذا لم توجد صورة، يعيد `null`.
+
 #### PUT /products/{product} — تحديث منتج
 
 **Validation:** نفس `store` لكن مع `sometimes` بدلاً من `required` و `unique:products,slug,{id}` للـ slug و `unique:products,sku,{id}` للـ sku.
+
+**📌 ملاحظة عن التحديث:** عند إرسال ملف `image` جديد في طلب التحديث، يتم:
+1. حذف ملف الصورة القديم من السيرفر (إذا كان مخزناً محلياً)
+2. تخزين الملف الجديد في `storage/app/public/products/`
+3. تحديث `main_image` تلقائياً
 
 **Response:** `{ "message": "Product updated successfully.", "product": AdminProductResource }`
 
@@ -519,7 +819,7 @@ AdminVariantResource: `{ id, product_id, sku, regular_price, sale_price, cost_pr
           "regular_price": 4500.00,
           "sale_price": 3990.00,
           "stock_status": "in_stock",
-          "main_image": null,
+          "main_image": "http://localhost/storage/products/abc123.jpg",
           "images": [
             { "id": 7, "image_url": "http://localhost/storage/products/xxx.png", "is_main": false }
           ],
