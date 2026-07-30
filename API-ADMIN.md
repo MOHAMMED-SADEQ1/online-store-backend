@@ -464,8 +464,8 @@ Accept: application/json
 | `low_stock_threshold` | integer | no | `min:0` |
 | `weight` | numeric | no | `min:0` |
 | `dimensions` | string | no | `max:100` |
-| `main_image` | string | no | `max:255` — رابط URL مباشر للصورة |
-| `image` | file | no | **NEW** 🆕 ملف صورة (`jpeg,png,jpg,gif,webp`، حد أقصى 5MB) — إذا تم إرساله، يتم تخزينه تلقائياً وتعيين `main_image` |
+| `main_image` | string/file | no | يقبل **رابط URL** نصي أو **ملف صورة** مباشر (`jpeg,png,jpg,gif,webp`، حد أقصى 5MB) |
+| `image` | file | no | ملف صورة (`jpeg,png,jpg,gif,webp`، حد أقصى 5MB) — إذا تم إرساله مع `main_image`، له الأولوية |
 | `is_active` | boolean | no | — |
 | `is_featured` | boolean | no | — |
 | `is_returnable` | boolean | no | هل المنتج قابل للإرجاع (استرداد مبلغ) |

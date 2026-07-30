@@ -76,6 +76,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         // Products (full API resource)
         Route::apiResource('products', ProductController::class);
+        // Route::get('products', [ProductController::class, 'index']);
+        // Route::post('products', [ProductController::class, 'store']);
+        // Route::get('products/{product}', [ProductController::class, 'show']);
+        // Route::post('products/{product}', [ProductController::class, 'update']);
+        // Route::delete('products/{product}', [ProductController::class, 'destroy']);
+
 
         // Product Variants (nested under products)
         Route::get('products/{product}/variants', [VariantController::class, 'index'])->name('products.variants.index');
