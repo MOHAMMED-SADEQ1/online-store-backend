@@ -631,7 +631,10 @@ Content-Type: application/json
 DELETE /cart/coupon
 Authorization: Bearer {token}
 ```
+> **Note:** `POST /cart/coupon` is also accepted (same handler) for frontends that use POST for removal.
+
 **Response (200):** `{ "message": "Coupon removed.", "cart": { "... cart object ..." } }`
+> The coupon is cleared server-side (`coupon_code` → `null`, `coupon_discount` → `0`). The route is registered **before** `/cart/{itemId}` so it is never shadowed by the dynamic item route.
 
 #### Remove Cart Item
 ```
@@ -1201,7 +1204,7 @@ PUT /notifications/read-all
 | 6 | PUT | `/cart/{id}` | Update cart item |
 | 7 | DELETE | `/cart/{id}` | Remove from cart |
 | 8 | POST | `/cart/apply-coupon` | Apply coupon to cart |
-| 9 | DELETE | `/cart/coupon` | Remove coupon from cart |
+| 9 | DELETE / POST | `/cart/coupon` | Remove coupon from cart (both methods accepted) |
 | 10 | GET | `/payment-methods` | List payment methods |
 | 11 | POST | `/checkout/pay` | Checkout & pay (online: PendingCheckout, COD: direct order) |
 | 12 | POST | `/checkout/{id}/verify` | Verify payment status after 3DS |

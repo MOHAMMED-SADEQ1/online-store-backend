@@ -112,10 +112,14 @@ $customerRoutes = function () {
         // Cart
         Route::get('cart', [CartController::class, 'index'])->name('cart.index');
         Route::post('cart', [CartController::class, 'store'])->name('cart.store');
+
+        // ⚠️ Important: coupon routes must be registered BEFORE cart/{cartItem}
+        // so the static 'coupon' segment isn't captured by the dynamic {cartItem}.
+        Route::post('cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+        Route::match(['delete', 'post'], 'cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+
         Route::put('cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
         Route::delete('cart/{cartItem}', [CartController::class, 'destroy'])->name('cart.destroy');
-        Route::post('cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
-        Route::delete('cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
 
         // Orders
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
